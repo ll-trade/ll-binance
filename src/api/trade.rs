@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 
-use crate::{string_as_f64, FutureOrderType, OrderSide, OrderStatus, OrderType, TimeInForce};
+use crate::{FutureOrderType, OrderSide, OrderStatus, OrderType, TimeInForce};
+use rust_decimal::Decimal;
 
 use super::{ApiQuery, QueryType};
 
@@ -24,38 +25,38 @@ impl ApiQuery for QPositionRisk {
 pub struct PositionRisk {
     pub symbol: String,
     pub position_side: PositionSide,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub position_amt: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub entry_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub break_even_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub mark_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub un_realized_profit: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub liquidation_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub isolated_margin: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub notional: f64,
+    #[serde()]
+    pub position_amt: Decimal,
+    #[serde()]
+    pub entry_price: Decimal,
+    #[serde()]
+    pub break_even_price: Decimal,
+    #[serde()]
+    pub mark_price: Decimal,
+    #[serde()]
+    pub un_realized_profit: Decimal,
+    #[serde()]
+    pub liquidation_price: Decimal,
+    #[serde()]
+    pub isolated_margin: Decimal,
+    #[serde()]
+    pub notional: Decimal,
     pub margin_asset: String,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub isolated_wallet: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub initial_margin: f64,
-    #[serde(rename = "maintMargin", deserialize_with = "string_as_f64")]
-    pub main_margin: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub position_initial_margin: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub open_order_initial_margin: f64,
+    #[serde()]
+    pub isolated_wallet: Decimal,
+    #[serde()]
+    pub initial_margin: Decimal,
+    #[serde(rename = "maintMargin")]
+    pub main_margin: Decimal,
+    #[serde()]
+    pub position_initial_margin: Decimal,
+    #[serde()]
+    pub open_order_initial_margin: Decimal,
     pub adl: i64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub bid_notional: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub ask_notional: f64,
+    #[serde()]
+    pub bid_notional: Decimal,
+    #[serde()]
+    pub ask_notional: Decimal,
     pub update_time: i64,
 }
 
@@ -159,19 +160,19 @@ pub struct FutureOrderSpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_in_force: Option<TimeInForce>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub quantity: Option<f64>,
+    pub quantity: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub quote_order_qty: Option<f64>,
+    pub quote_order_qty: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub price: Option<f64>,
+    pub price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_client_order_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub stop_price: Option<f64>,
+    pub stop_price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trailing_delta: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub iceberg_qty: Option<f64>,
+    pub iceberg_qty: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_order_resp_type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -196,21 +197,21 @@ pub struct FutureOrderResult {
     /// 客户自己设置的ID
     pub client_order_id: String,
 
-    #[serde(deserialize_with = "string_as_f64")]
-    pub price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub avg_price: f64,
+    #[serde()]
+    pub price: Decimal,
+    #[serde()]
+    pub avg_price: Decimal,
 
     /// 用户设置的原始订单数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub orig_qty: f64,
+    #[serde()]
+    pub orig_qty: Decimal,
     /// 交易的订单数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub executed_qty: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub cum_qty: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub cum_quote: f64,
+    #[serde()]
+    pub executed_qty: Decimal,
+    #[serde()]
+    pub cum_qty: Decimal,
+    #[serde()]
+    pub cum_quote: Decimal,
     /// 订单的时效方式
     pub time_in_force: TimeInForce,
     /// 订单类型， 比如市价单，现价单等
@@ -221,8 +222,8 @@ pub struct FutureOrderResult {
     /// 订单方向
     pub side: OrderSide,
     pub position_side: PositionSide,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub stop_price: f64,
+    #[serde()]
+    pub stop_price: Decimal,
 
     /// 交易时间戳
     pub update_time: i64,
@@ -238,19 +239,19 @@ pub struct OrderSpec {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub time_in_force: Option<TimeInForce>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub quantity: Option<f64>,
+    pub quantity: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub quote_order_qty: Option<f64>,
+    pub quote_order_qty: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub price: Option<f64>,
+    pub price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_client_order_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub stop_price: Option<f64>,
+    pub stop_price: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub trailing_delta: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub iceberg_qty: Option<f64>,
+    pub iceberg_qty: Option<Decimal>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub new_order_resp_type: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -292,26 +293,26 @@ pub struct QueriedOrder {
     /// 客户自己设置的ID
     pub client_order_id: String,
     /// 订单价格
-    #[serde(deserialize_with = "string_as_f64")]
-    pub price: f64,
+    #[serde()]
+    pub price: Decimal,
     /// 订单价格
-    #[serde(deserialize_with = "string_as_f64", default)]
-    pub avg_price: f64,
+    #[serde(default)]
+    pub avg_price: Decimal,
     /// 用户设置的原始订单数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub orig_qty: f64,
+    #[serde()]
+    pub orig_qty: Decimal,
     /// 交易的订单数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub executed_qty: f64,
-    #[serde(deserialize_with = "string_as_f64", default)]
-    pub cum_quote: f64,
+    #[serde()]
+    pub executed_qty: Decimal,
+    #[serde(default)]
+    pub cum_quote: Decimal,
     #[serde(default)]
     pub reduce_only: bool,
     #[serde(default)]
     pub close_position: bool,
     /// 累计交易的金额
-    #[serde(deserialize_with = "string_as_f64", default)]
-    pub cummulative_quote_qty: f64,
+    #[serde(default)]
+    pub cummulative_quote_qty: Decimal,
     /// 订单状态
     pub status: OrderStatus,
     /// 订单的时效方式
@@ -322,11 +323,11 @@ pub struct QueriedOrder {
     /// 订单方向
     pub side: OrderSide,
     /// 止损价格
-    #[serde(deserialize_with = "string_as_f64")]
-    pub stop_price: f64,
+    #[serde()]
+    pub stop_price: Decimal,
     /// 冰山数量
-    #[serde(deserialize_with = "string_as_f64", default)]
-    pub iceberg_qty: f64,
+    #[serde(default)]
+    pub iceberg_qty: Decimal,
     /// 订单时间
     pub time: i64,
     /// 最后更新时间
@@ -335,8 +336,8 @@ pub struct QueriedOrder {
     #[serde(default)]
     pub is_working: bool,
     /// 原始交易金额
-    #[serde(deserialize_with = "string_as_f64", default)]
-    pub orig_quote_order_qty: f64,
+    #[serde(default)]
+    pub orig_quote_order_qty: Decimal,
     pub self_trade_prevention_mode: String,
 }
 
@@ -369,17 +370,17 @@ pub struct OrderResult {
     /// 交易时间戳
     pub transact_time: i64,
     /// 订单价格
-    #[serde(deserialize_with = "string_as_f64")]
-    pub price: f64,
+    #[serde()]
+    pub price: Decimal,
     /// 用户设置的原始订单数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub orig_qty: f64,
+    #[serde()]
+    pub orig_qty: Decimal,
     /// 交易的订单数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub executed_qty: f64,
+    #[serde()]
+    pub executed_qty: Decimal,
     /// 累计交易的金额
-    #[serde(deserialize_with = "string_as_f64")]
-    pub cummulative_quote_qty: f64,
+    #[serde()]
+    pub cummulative_quote_qty: Decimal,
     /// 订单状态
     pub status: OrderStatus,
     /// 订单的时效方式
@@ -405,17 +406,17 @@ pub struct OrderFull {
     /// 交易时间戳
     pub transact_time: i64,
     /// 订单价格
-    #[serde(deserialize_with = "string_as_f64")]
-    pub price: f64,
+    #[serde()]
+    pub price: Decimal,
     /// 用户设置的原始订单数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub orig_qty: f64,
+    #[serde()]
+    pub orig_qty: Decimal,
     /// 交易的订单数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub executed_qty: f64,
+    #[serde()]
+    pub executed_qty: Decimal,
     /// 累计交易的金额
-    #[serde(deserialize_with = "string_as_f64")]
-    pub cummulative_quote_qty: f64,
+    #[serde()]
+    pub cummulative_quote_qty: Decimal,
     /// 订单状态
     pub status: OrderStatus,
     /// 订单的时效方式
@@ -433,14 +434,14 @@ pub struct OrderFull {
 #[serde(rename_all = "camelCase")]
 pub struct OrderFill {
     /// 交易的价格
-    #[serde(deserialize_with = "string_as_f64")]
-    pub price: f64,
+    #[serde()]
+    pub price: Decimal,
     /// 交易的数量
-    #[serde(deserialize_with = "string_as_f64")]
-    pub qty: f64,
+    #[serde()]
+    pub qty: Decimal,
     /// 手续费金额
-    #[serde(deserialize_with = "string_as_f64")]
-    pub commission: f64,
+    #[serde()]
+    pub commission: Decimal,
     /// 手续费的币种
     pub commission_asset: String,
 }

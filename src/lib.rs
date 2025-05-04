@@ -1,9 +1,6 @@
-use std::{fmt, str::FromStr};
+use std::str::FromStr;
 
-use serde::{
-    de::{Unexpected, Visitor},
-    Deserialize, Deserializer, Serialize,
-};
+use serde::{Deserialize, Serialize};
 pub use sproxy;
 use time::OffsetDateTime;
 
@@ -14,61 +11,6 @@ pub mod rest;
 
 fn millis_ts() -> i64 {
     (OffsetDateTime::now_utc().unix_timestamp_nanos() / 1_000_000) as i64
-}
-
-fn string_as_f64<'de, D>(deserializer: D) -> Result<f64, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    deserializer.deserialize_str(F64Visitor)
-}
-
-fn string_as_u64<'de, D>(deserializer: D) -> Result<u64, D::Error>
-where
-    D: Deserializer<'de>,
-{
-    deserializer.deserialize_str(U64Visitor)
-}
-
-struct U64Visitor;
-impl<'de> Visitor<'de> for U64Visitor {
-    type Value = u64;
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("a string representation of a u64")
-    }
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        if v.is_empty() {
-            Ok(0)
-        } else {
-            v.parse::<u64>().map_err(|_| {
-                E::invalid_value(Unexpected::Str(v), &"a string representation as u64")
-            })
-        }
-    }
-}
-
-struct F64Visitor;
-
-impl<'de> Visitor<'de> for F64Visitor {
-    type Value = f64;
-    fn expecting(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
-        formatter.write_str("a string representation of a f64")
-    }
-    fn visit_str<E>(self, v: &str) -> Result<Self::Value, E>
-    where
-        E: serde::de::Error,
-    {
-        if v.is_empty() {
-            Ok(0.0)
-        } else {
-            v.parse::<f64>().map_err(|_| {
-                E::invalid_value(Unexpected::Str(v), &"a string representation as f64")
-            })
-        }
-    }
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq, PartialOrd, Ord)]

@@ -30,3 +30,4 @@ time = { version = "0.3.36", features = [
     "parsing",
     "serde-well-known",
 ] }
+rust_decimal = { version = "1.37.1", features = ["macros"] }

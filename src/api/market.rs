@@ -1,11 +1,12 @@
 use std::fmt;
 
+use rust_decimal::Decimal;
 use serde::{
-    de::{SeqAccess, Unexpected, Visitor},
     Deserialize, Deserializer, Serialize,
+    de::{SeqAccess, Unexpected, Visitor},
 };
 
-use crate::{realtime_market::Interval, string_as_f64};
+use crate::realtime_market::Interval;
 
 use super::{ApiQuery, QueryType};
 
@@ -64,8 +65,8 @@ impl ApiQuery for QLatestPrice {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct LatestPrice {
     pub symbol: String,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub price: f64,
+    #[serde()]
+    pub price: Decimal,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -87,7 +88,7 @@ pub struct Depth {
 
 /// (价格, 数量)
 #[derive(Debug)]
-pub struct PriceVol(pub f64, pub f64);
+pub struct PriceVol(pub Decimal, pub Decimal);
 
 impl<'de> Deserialize<'de> for PriceVol {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
@@ -113,13 +114,13 @@ impl<'de> Visitor<'de> for DepthOrderVisitor {
         let first: &'de str = seq
             .next_element()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"first element"))?;
-        let first_val = first.parse::<f64>().map_err(|_| {
+        let first_val = first.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(first), &"first element")
         })?;
         let second: &'de str = seq
             .next_element()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"first element"))?;
-        let second_val = second.parse::<f64>().map_err(|_| {
+        let second_val = second.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(second), &"first element")
         })?;
         Ok(PriceVol(first_val, second_val))
@@ -143,12 +144,12 @@ pub struct QRecentTrade {
 #[serde(rename_all = "camelCase")]
 pub struct TradeRecord {
     pub id: usize,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub qty: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub quote_qty: f64,
+    #[serde()]
+    pub price: Decimal,
+    #[serde()]
+    pub qty: Decimal,
+    #[serde()]
+    pub quote_qty: Decimal,
     /// 交易成交时间, 和websocket中的T一致
     pub time: i64,
     pub is_buyer_maker: bool,
@@ -194,10 +195,10 @@ pub struct QAggTrade {
 pub struct AggTrade {
     #[serde(rename = "a")]
     pub agg_trade_id: i64,
-    #[serde(rename = "p", deserialize_with = "string_as_f64")]
-    pub price: f64,
-    #[serde(rename = "q", deserialize_with = "string_as_f64")]
-    pub qty: f64,
+    #[serde(rename = "p")]
+    pub price: Decimal,
+    #[serde(rename = "q")]
+    pub qty: Decimal,
     #[serde(rename = "f")]
     pub first_trade_id: i64,
     #[serde(rename = "l")]
@@ -228,16 +229,16 @@ pub struct QKline {
 #[derive(Debug, Clone, Serialize, Default)]
 pub struct Kline {
     pub open_time: i64,
-    pub open: f64,
-    pub high: f64,
-    pub low: f64,
-    pub close: f64,
-    pub volume: f64,
+    pub open: Decimal,
+    pub high: Decimal,
+    pub low: Decimal,
+    pub close: Decimal,
+    pub volume: Decimal,
     pub close_time: i64,
-    pub amount: f64,
+    pub amount: Decimal,
     pub count: usize,
-    pub buy_volume: f64,
-    pub buy_amount: f64,
+    pub buy_volume: Decimal,
+    pub buy_amount: Decimal,
 }
 
 impl<'de> Deserialize<'de> for Kline {
@@ -268,31 +269,31 @@ impl<'de> Visitor<'de> for KlineVisitor {
         let open_str: &'de str = seq
             .next_element()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"open price"))?;
-        let open = open_str.parse::<f64>().map_err(|_| {
+        let open = open_str.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(open_str), &"f64 string")
         })?;
         let high_str: &'de str = seq
             .next_element()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"highest price"))?;
-        let high = high_str.parse::<f64>().map_err(|_| {
+        let high = high_str.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(high_str), &"f64 string")
         })?;
         let low_str: &'de str = seq
             .next_element()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"lowest price"))?;
-        let low = low_str.parse::<f64>().map_err(|_| {
+        let low = low_str.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(low_str), &"f64 string")
         })?;
         let close_str: &'de str = seq
             .next_element()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"close price"))?;
-        let close = close_str.parse::<f64>().map_err(|_| {
+        let close = close_str.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(close_str), &"f64 string")
         })?;
         let vol_str = seq.next_element::<&'de str>()?.ok_or_else(|| {
             serde::de::Error::invalid_value(Unexpected::Option, &"expect volumne")
         })?;
-        let volume = vol_str.parse::<f64>().map_err(|_| {
+        let volume = vol_str.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(close_str), &"f64 string")
         })?;
         let close_time: i64 = seq.next_element()?.ok_or_else(|| {
@@ -301,7 +302,7 @@ impl<'de> Visitor<'de> for KlineVisitor {
         let amount = seq
             .next_element::<&'de str>()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"amount"))?;
-        let amount = amount.parse::<f64>().map_err(|_| {
+        let amount = amount.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(close_str), &"f64 string")
         })?;
         let count: usize = seq.next_element()?.ok_or_else(|| {
@@ -310,13 +311,13 @@ impl<'de> Visitor<'de> for KlineVisitor {
         let buy_volume = seq
             .next_element::<&'de str>()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"amount"))?;
-        let buy_volume = buy_volume.parse::<f64>().map_err(|_| {
+        let buy_volume = buy_volume.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(close_str), &"f64 string")
         })?;
         let buy_amount = seq
             .next_element::<&'de str>()?
             .ok_or_else(|| serde::de::Error::invalid_value(Unexpected::Option, &"amount"))?;
-        let buy_amount = buy_amount.parse::<f64>().map_err(|_| {
+        let buy_amount = buy_amount.parse::<Decimal>().map_err(|_| {
             serde::de::Error::invalid_value(Unexpected::Str(close_str), &"f64 string")
         })?;
         for _ in 0..1 {
@@ -377,8 +378,8 @@ pub struct QAvgPrice {
 #[serde(rename_all = "camelCase")]
 pub struct AvgPrice {
     pub min: i64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub price: f64,
+    #[serde()]
+    pub price: Decimal,
     pub close_time: i64,
 }
 
@@ -413,34 +414,34 @@ pub enum MiniTickerType {
 #[serde(rename_all = "camelCase")]
 pub struct H24Ticker {
     pub symbol: String,
-    #[serde(default, deserialize_with = "string_as_f64")]
-    pub price_change: f64,
-    #[serde(default, deserialize_with = "string_as_f64")]
-    pub price_change_percent: f64,
-    #[serde(default, deserialize_with = "string_as_f64")]
-    pub weighted_avg_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub last_price: f64,
-    #[serde(default, deserialize_with = "string_as_f64")]
-    pub last_qty: f64,
-    #[serde(default, deserialize_with = "string_as_f64")]
-    pub bid_price: f64,
-    #[serde(default, deserialize_with = "string_as_f64")]
-    pub bid_qty: f64,
-    #[serde(default, deserialize_with = "string_as_f64")]
-    pub ask_price: f64,
-    #[serde(default, deserialize_with = "string_as_f64")]
-    pub ask_qty: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub open_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub high_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub low_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub volume: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub quote_volume: f64,
+    #[serde(default)]
+    pub price_change: Decimal,
+    #[serde(default)]
+    pub price_change_percent: Decimal,
+    #[serde(default)]
+    pub weighted_avg_price: Decimal,
+    #[serde()]
+    pub last_price: Decimal,
+    #[serde(default)]
+    pub last_qty: Decimal,
+    #[serde(default)]
+    pub bid_price: Decimal,
+    #[serde(default)]
+    pub bid_qty: Decimal,
+    #[serde(default)]
+    pub ask_price: Decimal,
+    #[serde(default)]
+    pub ask_qty: Decimal,
+    #[serde()]
+    pub open_price: Decimal,
+    #[serde()]
+    pub high_price: Decimal,
+    #[serde()]
+    pub low_price: Decimal,
+    #[serde()]
+    pub volume: Decimal,
+    #[serde()]
+    pub quote_volume: Decimal,
     pub open_time: i64,
     pub close_time: i64,
     pub first_id: i64,
@@ -472,14 +473,14 @@ pub struct QSingleTickerBook {
 pub struct SingleTickerBook {
     pub last_update_id: i64,
     pub symbol: String,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub ask_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub ask_qty: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub bid_price: f64,
-    #[serde(deserialize_with = "string_as_f64")]
-    pub bid_qty: f64,
+    #[serde()]
+    pub ask_price: Decimal,
+    #[serde()]
+    pub ask_qty: Decimal,
+    #[serde()]
+    pub bid_price: Decimal,
+    #[serde()]
+    pub bid_qty: Decimal,
     pub time: i64,
 }
 

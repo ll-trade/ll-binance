@@ -1,9 +1,8 @@
-use super::string_as_f64;
-use super::string_as_u64;
 use super::ApiQuery;
 use super::EmptyResponse;
 use super::QueryType;
 use super::RateLimit;
+use rust_decimal::Decimal;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -90,29 +89,34 @@ pub struct ExSymbol {
 pub enum SymbolFilter {
     #[serde(rename = "NOTIONAL")]
     Notional {
-        #[serde(deserialize_with = "string_as_f64", rename = "minNotional")]
-        min_notional: f64,
+        #[serde(rename = "minNotional")]
+        min_notional: Decimal,
         #[serde(rename = "applyMinToMarket")]
         apply_min_to_market: bool,
-        #[serde(deserialize_with = "string_as_f64", rename = "maxNotional")]
-        max_notional: f64,
+        #[serde(rename = "maxNotional")]
+        max_notional: Decimal,
         #[serde(rename = "applyMaxToMarket")]
         apply_max_to_market: bool,
         #[serde(rename = "avgPriceMins")]
-        avg_price_mins: i64,
+        avg_price_mins: Decimal,
     },
     #[serde(rename = "PERCENT_PRICE_BY_SIDE")]
     PercentPriceBySide {
-        #[serde(deserialize_with = "string_as_f64", rename = "bidMultiplierUp")]
-        bid_multiplier_up: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "bidMultiplierDown")]
-        bid_multiplier_down: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "askMultiplierUp")]
-        ask_multiplier_up: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "askMultiplierDown")]
-        ask_multiplier_down: f64,
+        #[serde(rename = "bidMultiplierUp")]
+        bid_multiplier_up: Decimal,
+        #[serde(rename = "bidMultiplierDown")]
+        bid_multiplier_down: Decimal,
+        #[serde(rename = "askMultiplierUp")]
+        ask_multiplier_up: Decimal,
+        #[serde(rename = "askMultiplierDown")]
+        ask_multiplier_down: Decimal,
         #[serde(rename = "avgPriceMins")]
         avg_price_mins: i64,
+    },
+    #[serde(rename = "POSITION_RISK_CONTROL")]
+    PositionRiskControl {
+        #[serde(rename = "positionControlSide")]
+        position_control_side: String,
     },
     #[serde(rename = "TRAILING_DELTA")]
     TrailingDelta {
@@ -128,46 +132,46 @@ pub enum SymbolFilter {
 
     #[serde(rename = "PRICE_FILTER")]
     PriceFilter {
-        #[serde(deserialize_with = "string_as_f64", rename = "minPrice")]
-        min_price: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "maxPrice")]
-        max_price: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "tickSize")]
-        tick_size: f64,
+        #[serde(rename = "minPrice")]
+        min_price: Decimal,
+        #[serde(rename = "maxPrice")]
+        max_price: Decimal,
+        #[serde(rename = "tickSize")]
+        tick_size: Decimal,
     },
     #[serde(rename = "PERCENT_PRICE")]
     PercentPrice {
-        #[serde(deserialize_with = "string_as_f64", rename = "multiplierDown")]
-        multiplier_down: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "multiplierUp")]
-        multiplier_up: f64,
-        #[serde(deserialize_with = "string_as_u64", rename = "multiplierDecimal")]
-        multiplier_decimal: u64,
+        #[serde(rename = "multiplierDown")]
+        multiplier_down: Decimal,
+        #[serde(rename = "multiplierUp")]
+        multiplier_up: Decimal,
+        #[serde(rename = "multiplierDecimal")]
+        multiplier_decimal: Decimal,
     },
     #[serde(rename = "LOT_SIZE")]
     LOTSize {
-        #[serde(deserialize_with = "string_as_f64", rename = "stepSize")]
-        step_size: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "maxQty")]
-        max_qty: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "minQty")]
-        min_qty: f64,
+        #[serde(rename = "stepSize")]
+        step_size: Decimal,
+        #[serde(rename = "maxQty")]
+        max_qty: Decimal,
+        #[serde(rename = "minQty")]
+        min_qty: Decimal,
     },
     #[serde(rename = "MIN_NOTIONAL")]
     MinNotional {
-        #[serde(deserialize_with = "string_as_f64")]
-        notional: f64,
+        #[serde()]
+        notional: Decimal,
     },
     #[serde(rename = "ICEBERG_PARTS")]
     IcebergParts { limit: usize },
     #[serde(rename = "MARKET_LOT_SIZE")]
     MarketLOTSize {
-        #[serde(deserialize_with = "string_as_f64", rename = "stepSize")]
-        step_size: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "maxQty")]
-        max_qty: f64,
-        #[serde(deserialize_with = "string_as_f64", rename = "minQty")]
-        min_qty: f64,
+        #[serde(rename = "stepSize")]
+        step_size: Decimal,
+        #[serde(rename = "maxQty")]
+        max_qty: Decimal,
+        #[serde(rename = "minQty")]
+        min_qty: Decimal,
     },
     #[serde(rename = "MAX_NUM_ORDERS")]
     MaxNumOrders { limit: usize },
@@ -180,9 +184,9 @@ pub enum SymbolFilter {
     },
     #[serde(rename = "MAX_POSITION")]
     MaxPosition {
-        #[serde(deserialize_with = "string_as_f64")]
+        #[serde()]
         #[serde(rename = "maxPosition")]
-        max_position: f64,
+        max_position: Decimal,
     },
     #[serde(rename = "EXCHANGE_MAX_NUM_ORDERS")]
     ExchangeMaxNumOrders {

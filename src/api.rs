@@ -1,21 +1,19 @@
 use std::collections::BTreeMap;
 
-use serde::{de::DeserializeOwned, Deserialize, Deserializer, Serialize};
+use serde::{Deserialize, Deserializer, Serialize, de::DeserializeOwned};
 use session::Logon;
 use sproxy::ProxyConfig;
-use tracing::{info, warn};
+use tracing::{debug, warn};
 use ws_tool::{
+    ClientBuilder,
     codec::{StringCodec, StringRecv, StringSend},
     connector::{tcp_connect, wrap_rustls},
     errors::WsError,
     frame::OpCode,
     stream::{SyncStream, SyncStreamRead, SyncStreamWrite},
-    ClientBuilder,
 };
 
 use crate::millis_ts;
-use crate::string_as_f64;
-use crate::string_as_u64;
 
 pub const BASE_SPOT_URL: &str = "wss://ws-api.binance.com:443/ws-api/v3";
 pub const TEST_SPOT_URL: &str = "wss://testnet.binance.vision/ws-api/v3";
@@ -224,7 +222,7 @@ impl AutoReconnectClient {
             self.get_stream()?;
             if let Some(signed) = self.auth.as_ref().map(|auth| auth.sign(self.recv_window)) {
                 self.query(signed)?;
-                info!("logon ok");
+                debug!("logon ok");
             }
         }
         match self._send(P::METHOD, &param) {
@@ -236,7 +234,7 @@ impl AutoReconnectClient {
                     if let Some(signed) = self.auth.as_ref().map(|auth| auth.sign(self.recv_window))
                     {
                         self.query(signed)?;
-                        info!("logon ok");
+                        debug!("logon ok");
                     }
                     self.query_without_retry(&param)
                 }
@@ -256,7 +254,7 @@ impl AutoReconnectClient {
                 self.stream = None;
                 if let Some(signed) = self.auth.as_ref().map(|auth| auth.sign(self.recv_window)) {
                     self.query(signed)?;
-                    info!("logon ok");
+                    debug!("logon ok");
                 }
                 self.query_without_retry(&param)
             }

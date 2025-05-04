@@ -1,18 +1,19 @@
 use std::{collections::HashSet, str::FromStr};
 
+use rust_decimal::Decimal;
 use serde::{Deserialize, Serialize};
 use sproxy::ProxyConfig;
-use tracing::info;
+use tracing::debug;
 use ws_tool::{
+    ClientBuilder,
     codec::{StringCodec, StringRecv, StringSend},
     connector::{tcp_connect, wrap_rustls},
     errors::WsError,
     frame::OpCode,
     stream::{SyncStream, SyncStreamRead, SyncStreamWrite},
-    ClientBuilder,
 };
 
-use crate::{api::market::Kline, string_as_f64, OrderSide, OrderStatus, OrderType, TimeInForce};
+use crate::{OrderSide, OrderStatus, OrderType, TimeInForce, api::market::Kline};
 
 pub const SPOT_MARKET_URL: &str = "wss://stream.binance.com:9443/stream";
 pub const FUTURE_MARKET_URL: &str = "wss://fstream.binance.com/stream";
@@ -77,7 +78,7 @@ impl AutoReconnectMarketClient {
 
     fn get_stream(&mut self) -> Result<&mut StringCodec<SyncStream>, WsError> {
         if self.stream.is_none() {
-            info!("create new stream ...");
+            debug!("create new stream ...");
             self.stream = Some((self.conn_fn)()?);
         }
         Ok(self.stream.as_mut().unwrap())
@@ -376,20 +377,20 @@ pub struct KData {
     #[serde(rename = "L")]
     pub last_id: i64,
     /// 这根K线期间第一笔成交价
-    #[serde(rename = "o", deserialize_with = "string_as_f64")]
-    pub open: f64,
+    #[serde(rename = "o")]
+    pub open: Decimal,
     /// 这根K线期间末一笔成交价
-    #[serde(rename = "c", deserialize_with = "string_as_f64")]
-    pub close: f64,
+    #[serde(rename = "c")]
+    pub close: Decimal,
     /// 这根K线期间最高成交价
-    #[serde(rename = "h", deserialize_with = "string_as_f64")]
-    pub high: f64,
+    #[serde(rename = "h")]
+    pub high: Decimal,
     /// 这根K线期间最低成交价
-    #[serde(rename = "l", deserialize_with = "string_as_f64")]
-    pub low: f64,
+    #[serde(rename = "l")]
+    pub low: Decimal,
     /// 这根K线期间成交量
-    #[serde(rename = "v", deserialize_with = "string_as_f64")]
-    pub volume: f64,
+    #[serde(rename = "v")]
+    pub volume: Decimal,
     /// 这根K线期间成交笔数
     #[serde(rename = "n")]
     pub trade_num: u64,
@@ -397,14 +398,14 @@ pub struct KData {
     #[serde(rename = "x")]
     pub is_end: bool,
     /// 这根K线期间成交额
-    #[serde(rename = "q", deserialize_with = "string_as_f64")]
-    pub qty: f64,
+    #[serde(rename = "q")]
+    pub qty: Decimal,
     /// 主动买入的成交量
-    #[serde(rename = "V", deserialize_with = "string_as_f64")]
-    pub take_volume: f64,
+    #[serde(rename = "V")]
+    pub take_volume: Decimal,
     /// 主动买入的成交额
-    #[serde(rename = "Q", deserialize_with = "string_as_f64")]
-    pub take_qty: f64,
+    #[serde(rename = "Q")]
+    pub take_qty: Decimal,
     /// 忽略此参数
     #[serde(rename = "B")]
     pub __ignore: String,
@@ -478,14 +479,14 @@ pub struct BookTickerEvent {
     pub update_id: i64,
     #[serde(rename = "s")]
     pub symbol: String,
-    #[serde(rename = "b", deserialize_with = "string_as_f64")]
-    pub buy_price: f64,
-    #[serde(rename = "B", deserialize_with = "string_as_f64")]
-    pub buy_qty: f64,
-    #[serde(rename = "a", deserialize_with = "string_as_f64")]
-    pub sell_price: f64,
-    #[serde(rename = "A", deserialize_with = "string_as_f64")]
-    pub sell_qty: f64,
+    #[serde(rename = "b")]
+    pub buy_price: Decimal,
+    #[serde(rename = "B")]
+    pub buy_qty: Decimal,
+    #[serde(rename = "a")]
+    pub sell_price: Decimal,
+    #[serde(rename = "A")]
+    pub sell_qty: Decimal,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -501,23 +502,23 @@ pub struct MiniTicker {
     #[serde(rename = "s")]
     pub symbol: String,
     /// 最新成交价格
-    #[serde(rename = "c", deserialize_with = "string_as_f64")]
-    pub price_last_trade: f64,
+    #[serde(rename = "c")]
+    pub price_last_trade: Decimal,
     /// 24小时前开始第一笔成交价格
-    #[serde(rename = "o", deserialize_with = "string_as_f64")]
-    pub price_24h_first_trade: f64,
+    #[serde(rename = "o")]
+    pub price_24h_first_trade: Decimal,
     /// 24小时内最高成交价
-    #[serde(rename = "h", deserialize_with = "string_as_f64")]
-    pub high: f64,
+    #[serde(rename = "h")]
+    pub high: Decimal,
     /// 24小时内最低成交价
-    #[serde(rename = "l", deserialize_with = "string_as_f64")]
-    pub low: f64,
+    #[serde(rename = "l")]
+    pub low: Decimal,
     /// 成交量
-    #[serde(rename = "v", deserialize_with = "string_as_f64")]
-    pub volume: f64,
+    #[serde(rename = "v")]
+    pub volume: Decimal,
     /// 成交额
-    #[serde(rename = "q", deserialize_with = "string_as_f64")]
-    pub amount: f64,
+    #[serde(rename = "q")]
+    pub amount: Decimal,
 }
 
 impl MiniTicker {
@@ -576,10 +577,10 @@ pub struct OutboundAccountPosition {
 pub struct UserStreamBalance {
     #[serde(rename = "a")]
     pub asset: String,
-    #[serde(rename = "f", deserialize_with = "string_as_f64")]
-    pub free: f64,
-    #[serde(rename = "l", deserialize_with = "string_as_f64")]
-    pub lock: f64,
+    #[serde(rename = "f")]
+    pub free: Decimal,
+    #[serde(rename = "l")]
+    pub lock: Decimal,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
@@ -589,8 +590,8 @@ pub struct BalanceUpdated {
     pub event_time: i64,
     #[serde(rename = "a")]
     pub asset: String,
-    #[serde(rename = "d", deserialize_with = "string_as_f64")]
-    pub delta: f64,
+    #[serde(rename = "d")]
+    pub delta: Decimal,
     #[serde(rename = "T")]
     pub clear_time: i64,
 }
@@ -610,14 +611,14 @@ pub struct ExecutionReport {
     pub order_type: OrderType,
     #[serde(rename = "f")]
     pub time_in_force: TimeInForce,
-    #[serde(rename = "q", deserialize_with = "string_as_f64")]
-    pub origin_num: f64,
-    #[serde(rename = "p", deserialize_with = "string_as_f64")]
-    pub origin_price: f64,
-    #[serde(rename = "P", deserialize_with = "string_as_f64")]
-    pub stop_price: f64,
-    #[serde(rename = "F", deserialize_with = "string_as_f64")]
-    pub iceberg_num: f64,
+    #[serde(rename = "q")]
+    pub origin_num: Decimal,
+    #[serde(rename = "p")]
+    pub origin_price: Decimal,
+    #[serde(rename = "P")]
+    pub stop_price: Decimal,
+    #[serde(rename = "F")]
+    pub iceberg_num: Decimal,
     #[serde(rename = "g")]
     pub order_list_id: i64,
     #[serde(rename = "x")]
@@ -628,18 +629,18 @@ pub struct ExecutionReport {
     pub reject_type: String,
     #[serde(rename = "i")]
     pub order_id: i64,
-    #[serde(rename = "l", deserialize_with = "string_as_f64")]
-    pub free: f64,
-    #[serde(rename = "Y", deserialize_with = "string_as_f64")]
-    pub free_amount: f64,
-    #[serde(rename = "z", deserialize_with = "string_as_f64")]
-    pub fill: f64,
-    #[serde(rename = "Z", deserialize_with = "string_as_f64")]
-    pub fill_amount: f64,
-    #[serde(rename = "L", deserialize_with = "string_as_f64")]
-    pub last_trade_price: f64,
-    #[serde(rename = "n", deserialize_with = "string_as_f64")]
-    pub commission: f64,
+    #[serde(rename = "l")]
+    pub free: Decimal,
+    #[serde(rename = "Y")]
+    pub free_amount: Decimal,
+    #[serde(rename = "z")]
+    pub fill: Decimal,
+    #[serde(rename = "Z")]
+    pub fill_amount: Decimal,
+    #[serde(rename = "L")]
+    pub last_trade_price: Decimal,
+    #[serde(rename = "n")]
+    pub commission: Decimal,
     #[serde(rename = "N")]
     pub commission_type: Option<String>,
     #[serde(rename = "T")]
